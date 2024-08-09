@@ -118,7 +118,62 @@ void displayParcelsByCountry(char* country)
 	}
 }
 
-// 
+// Function to display parcels for a given country based on weight (higher or lower than the given weight)
+void displayPrcelsCountryandWeight(char* country, int weight, int higher)
+{
+	unsigned long index = hash(country); //generate the hash value for the country
+	Parcel* root = hashTable[index];
+	int found = 0;
+
+	//Traverse the BST to find and display parcels based on the base condition
+	while (root != NULL)
+	{
+		if ((higher && root->weight > weight) || (!higher && root->weight > weight))
+		{
+			printf("Destination:%s, weight: %d, Valuation: %2f\n, root-> destination, root-> weight, root->valuation");
+			found = 1;
+		}
+		if (root->left!= NULL && root->weight>weight)
+		{
+			root = root->left; //will move to the left sub tree if the weight is less
+		}
+		else
+		{
+			root = root->right; //will move to the right sub tree if the weight is more or equal
+		}
+	}
+
+	if (!found)
+	{
+		printf("No parcels found for %s with the specific weight condition\n, country"); //print a message if no parcels match the condition
+	}
+}
+
+// Function to calculate and display the total weight and valuation of all parcels for a given country
+void displayTotalLoadAndValuation(char* country) 
+{
+	unsigned long index = hash(country);  // generate the hash value for the country
+	Parcel* root = hashTable[index];
+	int totalWeight = 0;
+	float totalValuation = 0.0;
+
+
+// Traverse the BST to sum the weights and valuations
+	while (root != NULL)
+	{
+		totalWeight += root->weight; //add weight to the total
+		totalValuation = +root->valuation; //add value to the total 
+		if (root->left != NULL && root->weight > root->left->weight)
+		{
+			root = root->left;// move to the left subtree
+		}
+		else
+		{
+			root = root->right; //move to the right subtree
+		}
+
+
+	}
 
 
 
