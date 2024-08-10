@@ -24,10 +24,18 @@ typedef struct Parcel
 	struct Parcel* right;   // pointer to the right child in BST
 } Parcel;
 
-// Array of pointers to Parcel structure, representing the hash table
-Parcel* hashTable[HASH_TABLE_SIZE];
-
-// djb2 hash function to generate a hash value from a string
+//
+// FUNCTION: hash
+// DESCRIPTION: 
+//		This function is generating hash value from a string like 
+//		country name with the help of algorithm.
+//PARAMETERS: 
+//		char* str: the string like country name for which the hash value 
+//		is getting generated.
+// RETURNS: 
+//		unsigned long: the hash value which is limited to the range of
+//		hash table size.
+//	
 unsigned long hash(char* str)
 {
 	unsigned long hash = 5381;
@@ -39,11 +47,36 @@ unsigned long hash(char* str)
 	return hash % HASH_TABLE_SIZE;   // returns the hash value within the range of the hash table size
 }
 
-// function to create a new parcel structure with the given country, weight and valuation
+//
+// FUNCTION:
+//		createParcel
+// DESCRIPTION: 
+//		This function cretaes a new Parcel structure with provided country,
+//		weight and valuation.
+// PARAMETERS:
+//		char* country: the destination country for the parcel.
+//		int weight: the weight of the Parcel in grams.
+//		float valuation: the valuation of the parcel in dollars.
+// RETURNS:
+//		Parcel*: which is a pointer to the newly created Parcel structure
+//		or exits on memory allocation failure.
+//
 Parcel* createParcel(char* country, int weight, float valuation)
 {
 	Parcel* newParcel = (Parcel*)malloc(sizeof(Parcel)); // aalocate memory for new parcel
+	if (newParcel == NULL)
+	{
+		fprintf(stderr, "Error: Memory allocation failed for newParcel.\n");
+		exit(1);   // Exit the program if memory allocation got failed
+	}
+
 	newParcel->destination = (char*)malloc(strlen(country) + 1); // allocate memory for the country name
+	if (newParcel->destination == NULL)
+	{
+		fprintf(stderr, "Error: Memory allocation failed for destination.\n");
+		free(newParcel);   // Free the already allocated memory for newParcel
+		exit(1);   // Exit program if memory allocation got failed
+	}
 	strcpy_s(newParcel->destination, strlen(country) + 1, country); // copy the country name to the destination
 	newParcel->weight = weight; // set the weight of the parcel
 	newParcel->valuation = valuation; // set the valuation of parcel
@@ -51,7 +84,16 @@ Parcel* createParcel(char* country, int weight, float valuation)
 	return newParcel;
 }
 
-// function to insert a new parel into the BST based on weight
+//
+// FUNCTION: insertIntoBst
+// DRSCRIPTION: 
+//		This function insert a new parcel into the BST based on weight of the parcel.
+// PARAMETERS:
+//		Parcel** root: double pointer to the root of the BST where the parcel is to be inserted.
+//		Parcel* newParcel: a pointer to the parcel that needs to be inserted into the BST.
+// RETURNS:
+//		void: this function does not return a value.
+//
 void insertIntoBst(Parcel** root, Parcel* newParcel)
 {
 	if (*root == NULL)
@@ -68,8 +110,38 @@ void insertIntoBst(Parcel** root, Parcel* newParcel)
 	}
 }
 
-// function to load data from a file into the hash table
-void loadData(const char* filename)
+//
+// FUNCTION: insertIntoHashTable
+// DESCRIPTIPN: 
+//		This function inserts a parcel into the hash table based on the country name.
+// PARAMETERS: 
+//		Parcel* hashTable[]: the hash table where the parcel will get inserted.
+//		char* country: the destination country of the parcel.
+//		int weight: the weight of the parcel in grams.
+//		float valuation: the valuation of the parcel in dollars.
+// RETURNS:
+//		void: this function does not return a value.
+//
+void insertIntoHashTable(Parcel* hashTable[], char* country, int weight, float valuation)
+{
+	unsigned long index = hash(country);   // generate a hash value based on the country name
+	Parcel* newParcel = createParcel(country, weight, valuation);   // create a new parcel
+	insertIntoHashTable(&hashTable[index], newParcel);   // insert the parcel into the appropriate BST within the hash table
+}
+
+// 
+// FUNCTION: loadData
+// DESCRIPTION: 
+//		This function loads data from a file into the hash table.
+// PARAMETERS: 
+//		Parcel* hashTable[]: the hash table where the data will be loaded.
+//		const char* filename: the name of the file which is containing data.
+//		const char* validCountries[]: the list of valid country names.
+//		size_t numCountries: the number of valid countries.
+// RETURNS:
+//		void: this function does not return a value.
+//
+void loadData(Parcel* hashTable[], const char* filename, const char* validCountries[], size_t numCountries)
 {
 	FILE* file;
 	fopen_s(&file, filename, "r");   // open the file for reading
@@ -92,7 +164,16 @@ void loadData(const char* filename)
 	fclose(file);   // close the file after reading all data
 }
 
-// function to perform an in-order traversal of BST and orint the details of each parcel
+// 
+// FUNCTION: inOrderTraversal
+// DESCRIPTION:
+//		This function performs an in-order traversal of the BST and prints
+//		the details of each parcel.
+// PARAMETERS:
+//		Parcel* root: a pointer to the root of the BST to be traversed.
+// RETURNS:
+//		void: this function does not return a value.
+//
 void inOrderTraversal(Parcel* root)
 {
 	if (root != NULL)
@@ -103,9 +184,81 @@ void inOrderTraversal(Parcel* root)
 	}
 }
 
-// function to display all parcels for a given country
-void displayParcelsByCountry(char* country)
+//
+// FUNCTION: isValidCountry
+// DESCRIPTION: 
+//		This function checks if the provided country is in the list of valid countries.
+// PARAMETERS: 
+//		const char* country: the name of the country for checking.
+//		const char* validCountries[]: the list of valid country names.
+//		size_t numCountries: the number of valid countries.
+// RETURNS:
+//		int: return 1 if the country is valid else return 0.
+//
+int isValidCountry(const char* country, const char* validCountries[], size_t numCountries)
 {
+	for (size_t i = 0; i < numCountries; i++)
+	{
+		if (strcmp(validCountries[i], country) == 0)
+		{
+			return 1;   // country got found in the list
+		}
+	}
+	return 0;   // country got not found in the list
+}
+
+//
+// FUNCTION: getValidWeight
+// DESCRIPTION:
+//		This function gets a valid weight input from user, verifying it is a number.
+// PARAMETERS:
+//		void: this function is not taking any parameters.
+// RETURNS:
+//		int: returns the valid weight entered by the user.
+//
+int getValidWeight()
+{
+	int weight;
+	int result;
+
+	while (1)
+	{
+		printf("Enter weight: ");
+		result = scanf_s("%d", &weight);
+
+		// clear the input buffer
+		while (getchar() != '\n');
+
+		if (result == 1 && weight > 0)
+		{
+			return weight;   // returns the valid weight
+		}
+		else
+		{
+			printf("Invalid input, please enter a valid weight.\n");
+		}
+	}
+}
+
+// 
+// FUNCTION: displayParcelsByCountry
+// DESCRIPTION:
+//		This function displays all parcels for given country by performing an in-order traversal of the BST.
+// PARAMETERS:
+//		Parcel* hashTable[]: the hash table which is cointaining the parcels.
+//		char* country: the name of the country whose parcels will get displayed.
+//		const char* validCountries[]: the list of valid country names.
+//		size_t numCountries: the number of valid countries.
+// RETURNS:
+//		void: this function does not return a value.
+//
+void displayParcelsByCountry(Parcel* hashTable[], char* country, const char* validCountries[], size_t numCountries)
+{
+	if (isValidCountry(country, validCountries, numCountries))
+	{
+		printf("Error: Given country name is not in the list, please enter a valid country name.\n");
+	}
+
 	unsigned long index = hash(country);   // generate the hash value for the country
 	if (hashTable[index] != NULL)
 	{
@@ -118,62 +271,148 @@ void displayParcelsByCountry(char* country)
 	}
 }
 
-// Function to display parcels for a given country based on weight (higher or lower than the given weight)
-void displayPrcelsCountryandWeight(char* country, int weight, int higher)
+//
+// FUNCTION: findAndDisplayParcelsByWeight
+// DESCRIPTION: 
+//		This is the helper function which traverse the BST and
+//		display parcels based on the weight condition (higher or lower).
+// PARAMETERS:
+//		Parcel* root: a pointer to the root of the BST to be traversed.
+//		int weight: the weight condition to check.
+//		int higher: flag indicating whether to check for weights higher (1) 
+//		or lower (2) that the provided weight.
+// RETURNS:
+//		int: returns 1 if matching parcel got found else o.
+//
+int findAndDisplayParcelsByWeight(Parcel* root, int weight, int higher)
 {
-	unsigned long index = hash(country); //generate the hash value for the country
-	Parcel* root = hashTable[index];
 	int found = 0;
 
-	//Traverse the BST to find and display parcels based on the base condition
-	while (root != NULL)
+	if (root == NULL)
 	{
-		if ((higher && root->weight > weight) || (!higher && root->weight > weight))
-		{
-			printf("Destination:%s, weight: %d, Valuation: %2f\n, root-> destination, root-> weight, root->valuation");
-			found = 1;
-		}
-		if (root->left!= NULL && root->weight>weight)
-		{
-			root = root->left; //will move to the left sub tree if the weight is less
-		}
-		else
-		{
-			root = root->right; //will move to the right sub tree if the weight is more or equal
-		}
+		return found;
 	}
+
+	// traverse the left subtree
+	found |= findAndDisplayParcelsByWeight(root->left, weight, higher);
+
+	// chech if the current node meets the weight condition
+	if ((higher && root->weight > weight) || (!higher && root->weight < weight))
+	{
+		printf("Destination: %s, Weight: %d, Valuation: %.2f\n", root->destination, root->weight, root->valuation);
+		found = 1;
+	}
+
+	// traverse the right subtree
+	found |= findAndDisplayParcelsByWeight(root->right, weight, higher);
+
+	return found;
+}
+
+//
+// FUNCTION: displayParcelsByCountryAndWeight
+// DESCRIPTION:
+//		This function displays parcels for a given country based on weight.(higher or lower than provided weight).
+// PARAMETERS:
+//		Parcel* hashTable[]: the hash table which is cointaining the parcels.
+//		char* country: the name of the country whose parcels will get displayed.
+//		int weight: the weight condition to check.
+//		int higher: flag indicating whether to check for weights higher (1) 
+//		or lower (2) that the provided weight.
+//		const char* validCountries[]: the list of valid country names.
+//		size_t numCountries: the number of valid countries.
+// RETURNS:
+//		void: This function does not return a value.
+//
+void displayPrcelsByCountryAndWeight(Parcel* hashTable[], char* country, int weight, int higher, const char* validCountries[], size_t numCountries)
+{
+	if (!isValidCountry(country, validCountries, numCountries))
+	{
+		printf("Erros: Given country name is not in the list.\n");
+		return;
+	}
+
+	unsigned long index = hash(country); //generate the hash value for the country
+	Parcel* root = hashTable[index];
+
+	// Traverse the BST to find and display parcels based on the weight condition
+	int found = findAndDisplayParcelsByWeight(root, weight, higher);
 
 	if (!found)
 	{
-		printf("No parcels found for %s with the specific weight condition\n, country"); //print a message if no parcels match the condition
+		printf("No parcel is found for specific weight conditon.\n");
 	}
 }
 
-// Function to calculate and display the total weight and valuation of all parcels for a given country
-void displayTotalLoadAndValuation(char* country) 
+//
+// FUNCTION: calculateTotalLoadAndValuation
+// DESCRIPTION:
+//		This is helper function to calculates the total weight and valuation of parcels in the BST.
+// PARAMETERS:
+//		Parcel*root: a pointer to the root of the BST to be traversed.
+//		int* totalWeight: a pointer to the variable where total weight will get stored.
+//		float* totalValuation: a pointer to the variable where total valuation will get stored.
+// RETURNS:
+//		void: This function does not return a value.
+//
+void calculateTotalLoadAndValuation(Parcel* root, int* totalweight, float* totalvaluation)
 {
+	if (root == NULL)
+	{
+		return;
+	}
+
+	// traverse the left subtree
+	calculateTotalLoadAndValuation(root->left, totalweight, totalvaluation);
+
+	// add weight and valuation of the current node to the total
+	*totalweight += root->weight;
+	*totalvaluation += root->valuation;
+
+	// traverse the right subtree
+	calculateTotalLoadAndValuation(root->right, totalweight, totalvaluation);
+}
+
+//
+// FUNCTION: displayTotalLoadAndValuation
+// DESCRIPTION: 
+//		This function calculates and displays the total weight and valuation of all parcels for a given country.
+// PARAMETERS:
+//		Parcel* hashTable[]: the hash table which is cointaining the parcels.
+//		char* country: the name of the country whose total load and valuation of parcels will get displayed.
+//		const char* validCountries[]: the list of valid country names.
+//		size_t numCountries: the number of valid countries.
+// RETURNS:
+//
+void displayTotalLoadAndValuation(Parcel* hashTable[], char* country, const char* validCountries[], size_t numCountries)
+{
+	if (!isValidCountry(country, validCountries, numCountries))
+	{
+		printf("Error: Given country name is not in the list, please enter a valid country name.\n");
+		return;
+	}
+
 	unsigned long index = hash(country);  // generate the hash value for the country
 	Parcel* root = hashTable[index];
 	int totalWeight = 0;
 	float totalValuation = 0.0;
 
+	// traverse the BST to do sum the weight and valuations
+	calculateTotalLoadAndValuation(root, &totalWeight, &totalValuation);
 
-// Traverse the BST to sum the weights and valuations
-	while (root != NULL)
+	// print the total weight and valuation for the country
+	if (totalWeight > 0 || totalValuation > 0.0)
 	{
-		totalWeight += root->weight; //add weight to the total
-		totalValuation = +root->valuation; //add value to the total 
-		if (root->left != NULL && root->weight > root->left->weight)
-		{
-			root = root->left;// move to the left subtree
-		}
-		else
-		{
-			root = root->right; //move to the right subtree
-		}
-
-
+		printf("Total load for %s: %d grams\n", country, totalWeight);
+		printf("Total valuation for %s: $%.2f\n", country, totalValuation);
 	}
+	else
+	{
+		printf("No parcels found for %s.\n", country);   // print a message if no parcels are found
+	}
+}
+
+// 
 
 
 
