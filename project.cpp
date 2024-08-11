@@ -440,3 +440,103 @@ int max(int a, int b)
 {
 	return (a > b) ? a : b;
 }
+
+//
+// FUNCTION : displayCheapestAndMostExpensive
+// DESCRIPTION :
+// This function finds and displays the cheapest and most expensive parcels for a given country.
+// PARAMETERS :
+// Parcel* hashTable[] : the hash table containing the parcels.
+// char* country : the name of the country whose cheapest and most expensive parcels are to be displayed.
+// const char* validCountries[] : the list of valid country names.
+// size_t numCountries : the number of valid countries.
+// RETURNS :
+// void : This function does not return a value.
+//
+void displayCheapestAndMostExpensive(Parcel* hashTable[], char* country, const char* validCountries[], size_t numCountries) 
+{
+	if (!isValidCountry(country, validCountries, numCountries)) 
+	{
+		printf("Error: Given country name is not in the list, please enter a valid country name.\n");
+		return;
+	}
+
+	unsigned long index = hash(country);  // generate the hash value for the country
+	Parcel* root = hashTable[index];
+	Parcel* cheapest = NULL;
+	Parcel* mostExpensive = NULL;
+
+	// Traverse the BST to find the cheapest and most expensive parcels
+	findCheapestAndMostExpensive(root, &cheapest, &mostExpensive);
+
+	// Print the details of the cheapest and most expensive parcels
+	if (cheapest && mostExpensive) {
+		printf("Cheapest parcel for %s: Weight: %d, Valuation: %.2f\n", country, cheapest->weight, cheapest->valuation);
+		printf("Most expensive parcel for %s: Weight: %d, Valuation: %.2f\n", country, mostExpensive->weight, mostExpensive->valuation);
+	}
+	else {
+		printf("No parcels found for %s.\n", country);  // print a message if no parcels are found
+	}
+}
+
+
+//
+// FUNCTION : displayLightestAndHeaviest
+// DESCRIPTION :
+// This function finds and displays the lightest and heaviest parcels for a given country.
+// PARAMETERS :
+// Parcel* hashTable[] : the hash table containing the parcels.
+// char* country : the name of the country whose lightest and heaviest parcels are to be displayed.
+// const char* validCountries[] : the list of valid country names.
+// size_t numCountries : the number of valid countries.
+// RETURNS :
+// void : This function does not return a value.
+//
+
+void displayLightestAndHeaviest(Parcel* hashTable[], char* country, const char* validCountries[], size_t numCountries
+	{
+	 if (!isValidCountry(country, validCountries, numCountries)) 
+	 {
+		printf("Error: Given country name is not in the list, please enter a valid country name.\n");
+		return;
+	 }
+
+	unsigned long index = hash(country);  // generate the hash value for the country
+	Parcel* root = hashTable[index];
+	Parcel* lightest = NULL;
+	Parcel* heaviest = NULL;
+
+	// Traverse the BST to find the lightest and heaviest parcels
+	findLightestAndHeaviest(root, &lightest, &heaviest);
+
+	// Print the details of the lightest and heaviest parcels
+	if (lightest && heaviest) 
+	{
+		printf("Lightest parcel for %s: Weight: %d, Valuation: %.2f\n", country, lightest->weight, lightest->valuation);
+		printf("Heaviest parcel for %s: Weight: %d, Valuation: %.2f\n", country, heaviest->weight, heaviest-	>valuation);
+	}
+	else 
+	{
+		printf("No parcels found for %s.\n", country);  // print a message if no parcels are found
+	} 
+}
+
+//
+// FUNCTION : cleanupMemory
+// DESCRIPTION :
+// This function cleans up all memory allocated for the hash table.
+// PARAMETERS :
+// Parcel* hashTable[] : the hash table to be cleaned up.
+// RETURNS :
+// void : This function does not return a value.
+//
+void cleanupMemory(Parcel* hashTable[]) 
+{
+	for (int i = 0; i < HASH_TABLE_SIZE; i++) 
+	{
+		cleanupBst(hashTable[i]);  // clean up each BST in the hash table
+	}
+}
+
+
+
