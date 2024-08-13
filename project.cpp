@@ -122,11 +122,11 @@ void insertIntoBst(Parcel** root, Parcel* newParcel)
 // RETURNS:
 //		void: this function does not return a value.
 //
-void insertIntoHashTable(Parcel* hashTable[], char* country, int weight, float valuation)
+void insertIntoHashTable(Parcel* hashTable[], char* country, int weight, float valuation) 
 {
 	unsigned long index = hash(country);   // generate a hash value based on the country name
 	Parcel* newParcel = createParcel(country, weight, valuation);   // create a new parcel
-	insertIntoHashTable(&hashTable[index], newParcel);   // insert the parcel into the appropriate BST within the hash table
+	insertIntoBst(&hashTable[index], newParcel);   // insert the parcel into the appropriate BST within the hash table
 }
 
 // 
@@ -158,7 +158,7 @@ void loadData(Parcel* hashTable[], const char* filename, const char* validCountr
 	// reading each line pf the file and insert data into the hash table
 	while (fscanf_s(file, "%20[^,], %d, %f\n", country, (unsigned)_countof(country), &weight, &valuation) != EOF)
 	{
-		insertIntoHashTable(country, weight, valuation);
+		insertIntoHashTable(hashTable, country, weight, valuation);
 	}
 
 	fclose(file);   // close the file after reading all data
@@ -412,46 +412,54 @@ void displayTotalLoadAndValuation(Parcel* hashTable[], char* country, const char
 	}
 }
 
-// 
-
-
-
-
-struct AVLTree
+//
+// FUNCTION: findCheapestAndMostExpensive
+// DESCRIPTION: 
+//		This function finds cheapest and most expensive parcel in the BST.
+// PARAMETERS:
+//		Parcel* root: pointer to the root of BST to be traversed.
+//		Parcel** cheapest: double pointer to the variable where cheapest parcel will get stored.
+//		Parcel** mostExpensive: double pointer to variable where most expensive parcel will get stored.
+// RETURNS:
+//		void: this function does not return a value.
+//
+void findCheapestAndMostExpensive(Parcel* root, Parcel** cheapest, Parcel** mostExpensive)
 {
-	Parcel* root;
+	if (root == NULL)
+	{
+		return;
+	}
 
-};
+	// traverse left subtree
+	findCheapestAndMostExpensive(root->left, cheapest, mostExpensive);
 
-struct HashTable
-{
-	AVLTree* table[127];
-};
+	// check if the current node is cheapest
+	if (*cheapest == NULL || root->valuation < (*cheapest)->valuation)
+	{
+		*cheapest = root;
+	}
 
-unsigned long djb2(const char* str)
-{
-	unsigned long hash = 5381;
-	int c;
-	while ((c=*str++))
-		hash = ((hash << 5) + hash) + c; //hash * 33 + c return hash % 127
-}
+	// check if the current node is most expensive
+	if (*mostExpensive == NULL || root->valuation > (*mostExpensive)->valuation)
+	{
+		*mostExpensive = root;
+	}
 
-int max(int a, int b)
-{
-	return (a > b) ? a : b;
+	// traverse right subtree
+	findCheapestAndMostExpensive(root->right, cheapest, mostExpensive);
 }
 
 //
-// FUNCTION : displayCheapestAndMostExpensive
-// DESCRIPTION :
-// This function finds and displays the cheapest and most expensive parcels for a given country.
-// PARAMETERS :
-// Parcel* hashTable[] : the hash table containing the parcels.
-// char* country : the name of the country whose cheapest and most expensive parcels are to be displayed.
-// const char* validCountries[] : the list of valid country names.
-// size_t numCountries : the number of valid countries.
+// FUNCTION: displayCheapestAndMostExpensive
+// DESCRIPTION:
+//		This function finds and displays the cheapest and most expensive parcels for a given country.
+// PARAMETERS:
+//		Parcel* hashTable[]: the hash table containing the parcels.
+//		char* country: the name of the country whose cheapest and most expensive parcels are to be displayed.
+//		const char* validCountries[]: the list of valid country names.
+//		size_t numCountries: the number of valid countries.
 // RETURNS :
-// void : This function does not return a value.
+//		void: This function does not return a value.
 //
 void displayCheapestAndMostExpensive(Parcel* hashTable[], char* country, const char* validCountries[], size_t numCountries) 
 {
@@ -479,21 +487,56 @@ void displayCheapestAndMostExpensive(Parcel* hashTable[], char* country, const c
 	}
 }
 
+//
+// FUNCTION: findLighestAndHeaviest
+// DESCRIPTION: 
+//		This function find the lightest and heaviest parcel in BST.
+// PARAMETERS:
+//		Parcel* root: pointer to the root of BST to be traversed.
+//		Parcel** lightest: double pointer to variable where lightest parcel will get stored.
+//		Parcel** heaviest: double pointer to variable where heaviest parcel will get stored.
+// RETURN:
+//		void: this function does not return a value.
+//
+void findLightestAndHeaviest(Parcel* root, Parcel** lightest, Parcel** heaviest)
+{
+	if (root == NULL)
+	{
+		return;
+	}
+
+	// traverse left subtree
+	findLightestAndHeaviest(root->left, lightest, heaviest);
+
+	// check if current node is the lightest
+	if (*lightest == NULL || root->weight < (*lightest)->weight)
+	{
+		*lightest = root;
+	}
+
+	// check if current node is the heaviest
+	if (*heaviest == NULL || root->weight > (*heaviest)->weight)
+	{
+		*heaviest = root;
+	}
+
+	// traverse right subtree
+	findLightestAndHeaviest(root->right, lightest, heaviest);
+}
 
 //
-// FUNCTION : displayLightestAndHeaviest
-// DESCRIPTION :
-// This function finds and displays the lightest and heaviest parcels for a given country.
-// PARAMETERS :
-// Parcel* hashTable[] : the hash table containing the parcels.
-// char* country : the name of the country whose lightest and heaviest parcels are to be displayed.
-// const char* validCountries[] : the list of valid country names.
-// size_t numCountries : the number of valid countries.
-// RETURNS :
-// void : This function does not return a value.
+// FUNCTION: displayLightestAndHeaviest
+// DESCRIPTION:
+//		This function finds and displays the lightest and heaviest parcels for a given country.
+// PARAMETERS:
+//		Parcel* hashTable[]: the hash table containing the parcels.
+//		char* country: the name of the country whose lightest and heaviest parcels are to be displayed.
+//		const char* validCountries[]: the list of valid country names.
+//		size_t numCountries: the number of valid countries.
+// RETURNS:
+//		void: This function does not return a value.
 //
-
-void displayLightestAndHeaviest(Parcel* hashTable[], char* country, const char* validCountries[], size_t numCountries
+void displayLightestAndHeaviest(Parcel* hashTable[], char* country, const char* validCountries[], size_t numCountries)
 	{
 	 if (!isValidCountry(country, validCountries, numCountries)) 
 	 {
@@ -513,7 +556,7 @@ void displayLightestAndHeaviest(Parcel* hashTable[], char* country, const char* 
 	if (lightest && heaviest) 
 	{
 		printf("Lightest parcel for %s: Weight: %d, Valuation: %.2f\n", country, lightest->weight, lightest->valuation);
-		printf("Heaviest parcel for %s: Weight: %d, Valuation: %.2f\n", country, heaviest->weight, heaviest-	>valuation);
+		printf("Heaviest parcel for %s: Weight: %d, Valuation: %.2f\n", country, heaviest->weight, heaviest->valuation);
 	}
 	else 
 	{
@@ -522,13 +565,33 @@ void displayLightestAndHeaviest(Parcel* hashTable[], char* country, const char* 
 }
 
 //
-// FUNCTION : cleanupMemory
-// DESCRIPTION :
-// This function cleans up all memory allocated for the hash table.
-// PARAMETERS :
-// Parcel* hashTable[] : the hash table to be cleaned up.
-// RETURNS :
-// void : This function does not return a value.
+// FUNCTION: cleanupBst
+// DESCRIPTION: 
+//		This function recursively free memory allocated for BST.
+// PARAMETERS:
+//		Parcel*root: pointer to root of BST to cleaned up.
+// RETURNS:
+//		void: This function does not return a value.
+//
+void cleanupBst(Parcel* root)
+{
+	if (root != NULL)
+	{
+		cleanupBst(root->left);   // recursively free left subtree
+		cleanupBst(root->right);   // recursively free right subtree
+		free(root->destination);   // free dynamically allocated memory 
+		free(root);   // free Parcel structure
+	}
+}
+
+//
+// FUNCTION: cleanupMemory
+// DESCRIPTION:
+//		This function cleans up all memory allocated for the hash table.
+// PARAMETERS:
+//		Parcel* hashTable[]: the hash table to be cleaned up.
+// RETURNS:
+//		void: This function does not return a value.
 //
 void cleanupMemory(Parcel* hashTable[]) 
 {
@@ -538,5 +601,156 @@ void cleanupMemory(Parcel* hashTable[])
 	}
 }
 
+//
+// FUNCTION: displayMenu
+// DESCRIPTION:
+//		This function display the main menu.
+// PARAMETERS:
+//		void: this function deos not take any parameters.
+// RETURNS:
+//		void: this function does not return a value.
+//
+void displayMenu()
+{
+	printf("\n1. Enter country name and display all the parcels details\n");
+	printf("2. ENter country and weight pair\n");
+	printf("3. Display the total parcel load and valuation for the country\n");
+	printf("4. Enter the country name and display cheapest and most expensive parcel's details\n");
+	printf("5. Enter the country name and display lightest and heaviest parcel for the country\n");
+	printf("6. Exit the application\n");
+}
 
+//
+// FUNCTION: handleMenuOption
+// DESCRIPTION:
+//		This function handle user menu selection. 
+// PARAMETERS:
+//		Parcel* hashTable[]: the hash table containing the parcels.
+//		int option: the menu option selected by user.
+//		const char* validCountries[]: list of valid country name.
+//		size_t numCountries: number of valid countries.
+// RETURNS:
+//		void: this function does not return a value.
+//
+void handleMenuOption(Parcel* hashTable[], int option, const char* validCountries[], size_t numCountries)
+{
+	char country[21];
+	int weight;
+	int higher;
+	int result;
 
+	// process the selection of user based on menu option
+	switch (option)
+	{
+	case 1:
+		printf("Enter country name: ");
+		scanf_s("%20s", country, (unsigned)_countof(country));   // read the country name from user
+		displayParcelsByCountry(hashTable, country, validCountries, numCountries);  // display all parcel for country
+		break;
+	case 2:
+		printf("Enter country name: ");
+		scanf_s("%20s", country, (unsigned)_countof(country));  // read the country name from user
+		if (!isValidCountry(country, validCountries, numCountries))
+		{
+			printf("Error: Given country name is not in the list, please enter a valid country name.\n");
+			break;   // exit case if country is not valid
+		}
+		weight = getValidWeight();   // get valid weight from user
+
+		// loop to ensure user select a valid option for higher or lower weight
+		while (1)
+		{
+			printf("Select an option:\n1. Higher 2. Lower: ");
+			result = scanf_s("%d", &higher);
+
+			// clear input buffer if non-integer input entered
+			while (getchar() != '\n');
+
+			if (result == 1 && (higher == 1 || higher == 2))
+			{
+				break;   // exit loop if valid option is selected
+			}
+			else
+			{
+				printf("Invalid oprion. Please try again.\n");   // print error message if option is invalid
+			}
+		}
+
+		displayPrcelsByCountryAndWeight(hashTable, country, weight, higher == 1, validCountries, numCountries);   // display parcel based on weight condition
+		break;
+	case 3:
+		printf("Enter country name: ");
+		scanf_s("%20s", country, (unsigned)_countof(country));   // read the country name from user
+		displayTotalLoadAndValuation(hashTable, country, validCountries, numCountries);   // display total load and valuation of country
+		break;
+	case 4:
+		printf("Enter country name: ");
+		scanf_s("%20s", country, (unsigned)_countof(country));   // read the country name from user
+		displayCheapestAndMostExpensive(hashTable, country, validCountries, numCountries);   // display cheapest and expensive parcel of country
+		break;
+	case 5:
+		printf("Enter country name: ");
+		scanf_s("%20s", country, (unsigned)_countof(country));   // read the country name from user
+		displayLightestAndHeaviest(hashTable, country, validCountries, numCountries);   // display lightest and heaviest parcel of country
+		break;
+	case 6:
+		cleanupMemory(hashTable);   // clean up all allocated memory
+		exit(0);   // exti application
+	default:
+		printf("Invalid option. Please try again.\n");
+	}
+}
+
+//
+// FUNCTION: main
+// DESCRIPTION:
+//		This is main function that run application, display menu and handle user input.
+// PARAMETERS:
+//		void: this function is not taking any parameters.
+// RETURNS:
+//		void: returns o upon successful completion.
+//
+int main()
+{
+	Parcel* hashTable[HASH_TABLE_SIZE] = { NULL };   // initialize hash table with NULL pointer
+
+	const char* validCountries[] = {
+		"Azerbaijan", "Italy", "Ukraine", "Germany", "Australia", "Vanuatu", "Bulgaria", "Mongolia", "Armenia",
+		"Yemen", "Bahamas", "Trinidad & Tobago", "Spain", "Russian Federation", "Djobouti", "Ethiopia",
+		"Eswatini", "Slovakia", "Aruba", "Nepal", "India", "Gambia", "Israel", "Kosovo", "Burkina", "Barbados",
+		"Algeria", "Afghanistan", "Albania", "San Marino", "Costa Rica", "Marshall Islands", "Iceland",
+		"Kuwait", "Japan", "Canada", "Oman", "Liberia", "Vietnam", "Taiwan", "Bhutan", "Indonesia",
+		"Antigua & Deps", "Colombia", "France", "Brazil", "Congo", "Guatemala", "Guinea-Bissau", "Austria",
+		"Slovenia", "Comoros", "Serbia", "China", "Belarus", "Dominica", "Madagascar", "Chile", "Denmark",
+		"Tajikistan", "Angola", "Nicaragua", "Georgia", "Argentina", "Bangladesh", "Moldova"
+	};
+	size_t numCountries = sizeof(validCountries) / sizeof(validCountries[0]);
+
+	loadData(hashTable, "couriers.txt", validCountries, numCountries);   // load data from file to hash table
+
+	int option;
+	int result;
+
+	do
+	{
+		displayMenu();   // display menu
+		printf("Enter your choice: ");
+		result = scanf_s("%d", &option);   // read menu selection from user
+
+		// clear input buffer if non-integer input entered
+		while (getchar() != '\n');
+
+		if (result == 1 && option >= 1 && option <= 6)
+		{
+			handleMenuOption(hashTable, option, validCountries, numCountries);   // handle menu selection
+		}
+		else
+		{
+			printf("Invalid option. Please try again.\n");   // print error message if option is invalid
+		}
+	} while (option != 6);   // repeat until user select option of exit
+
+	cleanupMemory(hashTable);   // clean up memory before exiting
+
+	return 0;
+}
