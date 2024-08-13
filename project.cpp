@@ -63,7 +63,7 @@ unsigned long hash(char* str)
 //
 Parcel* createParcel(char* country, int weight, float valuation)
 {
-	Parcel* newParcel = (Parcel*)malloc(sizeof(Parcel)); // aalocate memory for new parcel
+	Parcel* newParcel = (Parcel*)malloc(sizeof(Parcel)); // allocate memory for new parcel
 	if (newParcel == NULL)
 	{
 		fprintf(stderr, "Error: Memory allocation failed for newParcel.\n");
@@ -77,6 +77,7 @@ Parcel* createParcel(char* country, int weight, float valuation)
 		free(newParcel);   // Free the already allocated memory for newParcel
 		exit(1);   // Exit program if memory allocation got failed
 	}
+
 	strcpy_s(newParcel->destination, strlen(country) + 1, country); // copy the country name to the destination
 	newParcel->weight = weight; // set the weight of the parcel
 	newParcel->valuation = valuation; // set the valuation of parcel
@@ -254,9 +255,10 @@ int getValidWeight()
 //
 void displayParcelsByCountry(Parcel* hashTable[], char* country, const char* validCountries[], size_t numCountries)
 {
-	if (isValidCountry(country, validCountries, numCountries))
+	if (!isValidCountry(country, validCountries, numCountries))
 	{
 		printf("Error: Given country name is not in the list, please enter a valid country name.\n");
+		return;
 	}
 
 	unsigned long index = hash(country);   // generate the hash value for the country
@@ -478,11 +480,13 @@ void displayCheapestAndMostExpensive(Parcel* hashTable[], char* country, const c
 	findCheapestAndMostExpensive(root, &cheapest, &mostExpensive);
 
 	// Print the details of the cheapest and most expensive parcels
-	if (cheapest && mostExpensive) {
+	if (cheapest && mostExpensive) 
+	{
 		printf("Cheapest parcel for %s: Weight: %d, Valuation: %.2f\n", country, cheapest->weight, cheapest->valuation);
 		printf("Most expensive parcel for %s: Weight: %d, Valuation: %.2f\n", country, mostExpensive->weight, mostExpensive->valuation);
 	}
-	else {
+	else 
+	{
 		printf("No parcels found for %s.\n", country);  // print a message if no parcels are found
 	}
 }
@@ -714,7 +718,8 @@ int main()
 {
 	Parcel* hashTable[HASH_TABLE_SIZE] = { NULL };   // initialize hash table with NULL pointer
 
-	const char* validCountries[] = {
+	const char* validCountries[] = 
+	{
 		"Azerbaijan", "Italy", "Ukraine", "Germany", "Australia", "Vanuatu", "Bulgaria", "Mongolia", "Armenia",
 		"Yemen", "Bahamas", "Trinidad & Tobago", "Spain", "Russian Federation", "Djobouti", "Ethiopia",
 		"Eswatini", "Slovakia", "Aruba", "Nepal", "India", "Gambia", "Israel", "Kosovo", "Burkina", "Barbados",
